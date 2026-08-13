@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TRACKY V4</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<style>
+*{box-sizing:border-box}
+
+body{
+    margin:0;
+    background:#eef1f4;
+    font-family:Arial,sans-serif;
+    color:#17202a;
+}
+
+.app{
+    width:100%;
+    max-width:430px;
+    min-height:100vh;
+    margin:auto;
+    background:white;
+}
+
+header{
+    background:#17202a;
+    color:white;
+    padding:28px 20px;
+}
+
+.logo{
+    font-size:36px;
+    font-weight:bold;
+    letter-spacing:4px;
+}
+
+.subtitle{
+    margin-top:5px;
+    opacity:.75;
+}
+
+main,.page{
+    padding:20px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+}
+
+.card{
+    border:0;
+    border-radius:18px;
+    padding:20px 15px;
+    min-height:135px;
+    background:#f1f3f5;
+    text-align:left;
+    cursor:pointer;
+    color:#17202a;
+}
+
+.card:active{
+    transform:scale(.97);
+}
+
+.icon{
+    font-size:34px;
+}
+
+.title{
+    margin-top:10px;
+    font-size:18px;
+    font-weight:bold;
+}
+
+.desc{
+    margin-top:5px;
+    font-size:13px;
+    color:#68737d;
+}
+
+.page{
+    display:none;
+}
+
+.page.active{
+    display:block;
+}
+
+.back{
+    border:0;
+    background:none;
+    padding:5px 0 18px;
+    font-size:16px;
+    cursor:pointer;
+}
+
+#map{
+    width:100%;
+    height:380px;
+    border-radius:18px;
+    overflow:hidden;
+}
+
+.primary{
+    width:100%;
+    padding:14px;
+    margin-top:10px;
+    border:0;
+    border-radius:12px;
+    background:#17202a;
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.secondary{
+    width:100%;
+    padding:13px;
+    margin-top:8px;
+    border:1px solid #d7dce1;
+    border-radius:12px;
+    background:white;
+    color:#17202a;
+    font-size:15px;
+    cursor:pointer;
+}
+
+input{
+    width:100%;
+    padding:14px;
+    margin-top:8px;
+    border:1px solid #d7dce1;
+    border-radius:12px;
+    font-size:16px;
+}
+
+.box{
+    background:#f1f3f5;
+    padding:15px;
+    border-radius:14px;
+    margin-top:10px;
+}
+
+.status{
+    margin-top:12px;
+    padding:13px;
+    border-radius:12px;
+    background:#f1f3f5;
+    font-size:14px;
+}
+
+.delete{
+    float:right;
+    border:0;
+    background:none;
+    cursor:pointer;
+    font-size:18px;
+}
+
+footer{
+    padding:28px;
+    text-align:center;
+    color:#89939d;
+    font-size:12px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<header>
+    <div class="logo">TRACKY</div>
+    <div class="subtitle">
+        Votre famille, vos véhicules, vos colis.
+    </div>
+</header>
+
+<main id="home">
+
+<div class="grid">
+
+<button class="card" onclick="showPage('gps')" type="button">
+    <div class="icon">🗺️</div>
+    <div class="title">Carte GPS</div>
+    <div class="desc">Ma position</div>
+</button>
+
+<button class="card" onclick="showPage('family')" type="button">
+    <div class="icon">👨‍👩‍👧‍👦</div>
+    <div class="title">Famille</div>
+    <div class="desc">Membres</div>
+</button>
+
+<button class="card" onclick="showPage('vehicles')" type="button">
+    <div class="icon">🚗</div>
+    <div class="title">Véhicules</div>
+    <div class="desc">Mes véhicules</div>
+</button>
+
+<button class="card" onclick="showPage('places')" type="button">
+    <div class="icon">🏠</div>
+    <div class="title">Mes lieux</div>
+    <div class="desc">Lieux favoris</div>
+</button>
+
+<button class="card" onclick="showPage('packages')" type="button">
+    <div class="icon">📦</div>
+    <div class="title">Mes colis</div>
+    <div class="desc">Suivi</div>
+</button>
+
+<button class="card" onclick="showPage('settings')" type="button">
+    <div class="icon">⚙️</div>
+    <div class="title">Paramètres</div>
+    <div class="desc">Configuration</div>
+</button>
+
+</div>
+
+<div class="box">
+    🐾 <strong>TRACKY V4</strong><br>
+    Votre assistant familial.
+</div>
+
+</main>
+
+
+<section id="gps" class="page">
+
+<button class="back" onclick="goHome()" type="button">
+    ← Accueil
+</button>
+
+<h2>🗺️ Carte GPS</h2>
+
+<div id="map"></div>
+
+<button class="primary" onclick="getGPS()" type="button">
+    📍 Me localiser
+</button>
+
+<button
+    class="secondary"
+    onclick="toggleTracking()"
+    type="button"
+    id="trackingButton">
+    🔄 Activer le suivi GPS
+</button>
+
+<div id="gpsStatus" class="status">
+    GPS en attente...
+</div>
+
+</section>
+
+
+<section id="family" class="page">
+
+<button class="back" onclick="goHome()" type="button">
+    ← Accueil
+</button>
+
+<h2>👨‍👩‍👧‍👦 Ma famille</h2>
+
+<div id="familyList"></div>
+
+<input
+    id="familyName"
+    placeholder="Prénom du membre">
+
+<button class="primary" onclick="addFamily()" type="button">
+    ➕ Ajouter
+</button>
+
+</section>
+
+
+<section id="vehicles" class="page">
+
+<button class="back" onclick="goHome()" type="button">
+    ← Accueil
+</button>
+
+<h2>🚗 Mes véhicules</h2>
+
+<div id="vehicleList"></div>
+
+<input
+    id="vehicleName"
+    placeholder="Ex : Polo Karim">
+
+<button class="primary" onclick="addVehicle()" type="button">
+    ➕ Ajouter un véhicule
+</button>
+
+</section>
+
+
+<section id="places" class="page">
+
+<button class="back" onclick="goHome()" type="button">
+    ← Accueil
+</button>
+
+<h2>🏠 Mes lieux</h2>
+
+<div id="placeList"></div>
+
+<input
+    id="placeName"
+    placeholder="Ex : Maison">
+
+<button class="primary" onclick="addPlace()" type="button">
+    ➕ Ajouter un lieu
+</button>
+
+<button class="secondary" onclick="saveCurrentPlace()" type="button">
+    📍 Enregistrer ma position actuelle
+</button>
+
+</section>
+
+
+<section id="packages" class="page">
+
+<button class="back" onclick="goHome()" type="button">
+    ← Accueil
+</button>
+
+<h2>📦 Mes colis</h2>
+
+<input
+    id="trackingNumber"
+    placeholder="Numéro de suivi">
+
+<button class="primary" onclick="addPackage()" type="button">
+    📦 Ajouter un colis
+</button>
+
+<div id="packageList"></div>
+
+</section>
+
+
+<section id="settings" class="page">
+
+<button class="back" onclick="goHome()" type="button">
+    ← Accueil
+</button>
+
+<h2>⚙️ Paramètres</h2>
+
+<div class="box">
+    🔐 TRACKY est destiné à votre famille.
+</div>
+
+<div class="box">
+    📍 Le partage de localisation nécessite le consentement de chaque personne.
+</div>
+
+<div class="box">
+    💾 Les données de cette V4 sont sauvegardées localement sur cet appareil.
+</div>
+
+<div class="box">
+    🚀 TRACKY V4
+</div>
+
+<button class="secondary" onclick="clearData()" type="button">
+    🗑️ Effacer les données
+</button>
+
+</section>
+
+
+<footer>
+    TRACKY • V4
+</footer>
+
+</div>
+
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+
+let map=null;
+let marker=null;
+let tracking=false;
+let watcher=null;
+let currentPosition=null;
+
+let family=
+JSON.parse(
+localStorage.getItem("tracky_family") || "[]"
+);
+
+let vehicles=
+JSON.parse(
+localStorage.getItem("tracky_vehicles") || "[]"
+);
+
+let places=
+JSON.parse(
+localStorage.getItem("tracky_places") || "[]"
+);
+
+let packages=
+JSON.parse(
+localStorage.getItem("tracky_packages") || "[]"
+);
+
+
+function showPage(name){
+
+    document.getElementById("home").style.display="none";
+
+    document.querySelectorAll(".page").forEach(function(page){
+        page.classList.remove("active");
+    });
+
+    document.getElementById(name).classList.add("active");
+
+    if(name==="gps"){
+        setTimeout(function(){
+            initMap();
+        },200);
+    }
+
+    if(name==="family"){
+        renderFamily();
+    }
+
+    if(name==="vehicles"){
+        renderVehicles();
+    }
+
+    if(name==="places"){
+        renderPlaces();
+    }
+
+    if(name==="packages"){
+        renderPackages();
+    }
+}
+
+
+function goHome(){
+
+    document.querySelectorAll(".page").forEach(function(page){
+        page.classList.remove("active");
+    });
+
+    document.getElementById("home").style.display="block";
+}
+
+
+function initMap(){
+
+    if(map){
+        map.invalidateSize();
+        return;
+    }
+
+    map=L.map("map");
+
+    map.setView(
+        [46.603354,1.888334],
+        6
+    );
+
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            maxZoom:19,
+            attribution:"&copy; OpenStreetMap contributors"
+        }
+    ).addTo(map);
+}
+
+
+function getGPS(){
+
+    const status=
+    document.getElementById("gpsStatus");
+
+    initMap();
+
+    if(!navigator.geolocation){
+
+        status.innerHTML=
+        "❌ GPS indisponible.";
+
+        return;
+    }
+
+    status.innerHTML=
+    "📡 Recherche de votre position...";
+
+    navigator.geolocation.getCurrentPosition(
+
+        function(position){
+            updatePosition(position);
+        },
+
+        function(){
+            status.innerHTML=
+            "🔴 Autorisation GPS refusée ou indisponible.";
+        },
+
+        {
+            enableHighAccuracy:true,
+            timeout:15000,
+            maximumAge:0
+        }
+    );
+}
+
+
+function updatePosition(position){
+
+    const lat=
+    position.coords.latitude;
+
+    const lon=
+    position.coords.longitude;
+
+    currentPosition={
+        lat:lat,
+        lon:lon
+    };
+
+    initMap();
+
+    map.setView(
+        [lat,lon],
+        16
+    );
+
+    if(marker){
+
+        marker.setLatLng(
+            [lat,lon]
+        );
+
+    }else{
+
+        marker=
+        L.marker(
+            [lat,lon]
+        ).addTo(map);
+    }
+
+    marker
+    .bindPopup("📍 Vous êtes ici")
+    .openPopup();
+
+    document
+    .getElementById("gpsStatus")
+    .innerHTML=
+
+    "🟢 <strong>GPS actif</strong><br><br>"+
+    "Latitude : "+
+    lat.toFixed(6)+
+    "<br>"+
+    "Longitude : "+
+    lon.toFixed(6);
+}
+
+
+function toggleTracking(){
+
+    if(tracking){
+        stopTracking();
+    }else{
+        startTracking();
+    }
+}
+
+
+function startTracking(){
+
+    if(!navigator.geolocation){
+
+        alert(
+            "La géolocalisation n'est pas disponible."
+        );
+
+        return;
+    }
+
+    tracking=true;
+
+    document
+    .getElementById("trackingButton")
+    .textContent=
+    "⛔ Arrêter le suivi GPS";
+
+    watcher=
+    navigator.geolocation.watchPosition(
+
+        function(position){
+            updatePosition(position);
+        },
+
+        function(){
+            document
+            .getElementById("gpsStatus")
+            .innerHTML=
+            "🔴 Erreur GPS.";
+        },
+
+        {
+            enableHighAccuracy:true,
+            maximumAge:5000,
+            timeout:15000
+        }
+    );
+}
+
+
+function stopTracking(){
+
+    tracking=false;
+
+    if(watcher!==null){
+
+        navigator.geolocation.clearWatch(
+            watcher
+        );
+
+        watcher=null;
+    }
+
+    document
+    .getElementById("trackingButton")
+    .textContent=
+    "🔄 Activer le suivi GPS";
+
+    document
+    .getElementById("gpsStatus")
+    .innerHTML=
+    "🟡 Suivi GPS arrêté.";
+}
+
+
+function addFamily(){
+
+    const input=
+    document.getElementById("familyName");
+
+    const name=
+    input.value.trim();
+
+    if(!name){
+
+        alert("Entre un prénom.");
+
+        return;
+    }
+
+    family.push({
+        id:Date.now(),
+        name:name
+    });
+
+    saveData();
+
+    input.value="";
+
+    renderFamily();
+}
+
+
+function renderFamily(){
+
+    const list=
+    document.getElementById("familyList");
+
+    list.innerHTML="";
+
+    if(family.length===0){
+
+        list.innerHTML=
+        '<div class="box">Aucun membre ajouté.</div>';
+
+        return;
+    }
+
+    family.forEach(function(person){
+
+        const item=
+        document.createElement("div");
+
+        item.className="box";
+
+        item.innerHTML=
+
+        '<button class="delete" onclick="deleteFamily('+
+        person.id+
+        ')">🗑️</button>'+
+        '👤 <strong>'+
+        escapeHTML(person.name)+
+        '</strong><br><br>'+
+        '📍 Localisation : '+
+        '<span style="color:#89939d">non partagée</span>';
+
+        list.appendChild(item);
+    });
+}
+
+
+function deleteFamily(id){
+
+    family=
+    family.filter(
+        person=>person.id!==id
+    );
+
+    saveData();
+
+    renderFamily();
+}
+
+
+function addVehicle(){
+
+    const input=
+    document.getElementById("vehicleName");
+
+    const name=
+    input.value.trim();
+
+    if(!name){
+
+        alert("Entre le nom du véhicule.");
+
+        return;
+    }
+
+    vehicles.push({
+        id:Date.now(),
+        name:name
+    });
+
+    saveData();
+
+    input.value="";
+
+    renderVehicles();
+}
+
+
+function renderVehicles(){
+
+    const list=
+    document.getElementById("vehicleList");
+
+    list.innerHTML="";
+
+    if(vehicles.length===0){
+
+        list.innerHTML=
+        '<div class="box">Aucun véhicule ajouté.</div>';
+
+        return;
+    }
+
+    vehicles.forEach(function(vehicle){
+
+        const item=
+        document.createElement("div");
+
+        item.className="box";
+
+        item.innerHTML=
+
+        '<button class="delete" onclick="deleteVehicle('+
+        vehicle.id+
+        ')">🗑️</button>'+
+        '🚗 <strong>'+
+        escapeHTML(vehicle.name)+
+        '</strong><br><br>'+
+        '📍 Position : '+
+        '<span style="color:#89939d">non connectée</span>';
+
+        list.appendChild(item);
+    });
+}
+
+
+function deleteVehicle(id){
+
+    vehicles=
+    vehicles.filter(
+        vehicle=>vehicle.id!==id
+    );
+
+    saveData();
+
+    renderVehicles();
+}
+
+
+function addPlace(){
+
+    const input=
+    document.getElementById("placeName");
+
+    const name=
+    input.value.trim();
+
+    if(!name){
+
+        alert("Entre le nom du lieu.");
+
+        return;
+    }
+
+    places.push({
+        id:Date.now(),
+        name:name,
+        lat:null,
+        lon:null
+    });
+
+    saveData();
+
+    input.value="";
+
+    renderPlaces();
+}
+
+
+function saveCurrentPlace(){
+
+    if(!currentPosition){
+
+        alert(
+            "Localise-toi d'abord dans la rubrique GPS."
+        );
+
+        return;
+    }
+
+    const name=
+    prompt(
+        "Nom du lieu :",
+        "Maison"
+    );
+
+    if(!name)return;
+
+    places.push({
+        id:Date.now(),
+        name:name,
+        lat:currentPosition.lat,
+        lon:currentPosition.lon
+    });
+
+    saveData();
+
+    renderPlaces();
+}
+
+
+function renderPlaces(){
+
+    const list=
+    document.getElementById("placeList");
+
+    list.innerHTML="";
+
+    if(places.length===0){
+
+        list.innerHTML=
+        '<div class="box">Aucun lieu enregistré.</div>';
+
+        return;
+    }
+
+    places.forEach(function(place){
+
+        const item=
+        document.createElement("div");
+
+        item.className="box";
+
+        const position=
+        place.lat!==null
+        ?"📍 Position enregistrée"
+        :"📍 Position non enregistrée";
+
+        item.innerHTML=
+
+        '<button class="delete" onclick="deletePlace('+
+        place.id+
+        ')">🗑️</button>'+
+        '🏠 <strong>'+
+        escapeHTML(place.name)+
+        '</strong><br><br>'+
+        position;
+
+        list.appendChild(item);
+    });
+}
+
+
+function deletePlace(id){
+
+    places=
+    places.filter(
+        place=>place.id!==id
+    );
+
+    saveData();
+
+    renderPlaces();
+}
+
+
+function addPackage(){
+
+    const input=
+    document.getElementById("trackingNumber");
+
+    const number=
+    input.value.trim();
+
+    if(!number){
+
+        alert(
+            "Entre un numéro de suivi."
+        );
+
+        return;
+    }
+
+    packages.push({
+        id:Date.now(),
+        number:number,
+        status:"Suivi ajouté"
+    });
+
+    saveData();
+
+    input.value="";
+
+    renderPackages();
+}
+
+
+function renderPackages(){
+
+    const list=
+    document.getElementById("packageList");
+
+    list.innerHTML="";
+
+    if(packages.length===0){
+
+        list.innerHTML=
+        '<div class="box">Aucun colis ajouté.</div>';
+
+        return;
+    }
+
+    packages.forEach(function(pkg){
+
+        const item=
+        document.createElement("div");
+
+        item.className="box";
+
+        item.innerHTML=
+
+        '<button class="delete" onclick="deletePackage('+
+        pkg.id+
+        ')">🗑️</button>'+
+        '📦 <strong>'+
+        escapeHTML(pkg.number)+
+        '</strong><br><br>'+
+        '🟡 '+
+        escapeHTML(pkg.status);
+
+        list.appendChild(item);
+    });
+}
+
+
+function deletePackage(id){
+
+    packages=
+    packages.filter(
+        pkg=>pkg.id!==id
+    );
+
+    saveData();
+
+    renderPackages();
+}
+
+
+function saveData(){
+
+    localStorage.setItem(
+        "tracky_family",
+        JSON.stringify(family)
+    );
+
+    localStorage.setItem(
+        "tracky_vehicles",
+        JSON.stringify(vehicles)
+    );
+
+    localStorage.setItem(
+        "tracky_places",
+        JSON.stringify(places)
+    );
+
+    localStorage.setItem(
+        "tracky_packages",
+        JSON.stringify(packages)
+    );
+}
+
+
+function clearData(){
+
+    if(!confirm(
+        "Effacer toutes les données TRACKY ?"
+    )){
+        return;
+    }
+
+    localStorage.clear();
+
+    location.reload();
+}
+
+
+function escapeHTML(text){
+
+    return String(text)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+
+renderFamily();
+renderVehicles();
+renderPlaces();
+renderPackages();
+
+</script>
+
+</body>
+</html>
