@@ -1,0 +1,13 @@
+{
+  "background_color": "#ffffff",
+  "description": "TRACKY – Votre famille, vos véhicules, vos colis",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "tracky",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "tracky",
+  "start_url": "/",
+  "theme_color": "#ffffff",
+  "id": "tracky"
+}
